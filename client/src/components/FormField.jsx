@@ -19,7 +19,7 @@ const FormField = ({
           <button
             type="button"
             onClick={handleSurpriseMe}
-            className="border-b bg-[#6469ff] px-2 py-1 text-sm"
+            className="border-b bg-[#6469ff] px-2 py-1 text-sm text-white button"
           >
             Surprise Me
           </button>

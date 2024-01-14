@@ -17,7 +17,38 @@ const CreatePost = () => {
     e.preventDefault();
   };
 
-  const generateImage = () => {};
+  const generateImage = async () => {
+    if (post.prompt) {
+      try {
+        setGenerating(true);
+        const response = await fetch("http://localhost:8080/api/dalle", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ prompt: post.prompt }),
+        });
+        console.log(response);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to generate image. Status: ${response.status}`
+          );
+        }
+        const data = await response.json();
+
+        console.log(data);
+        // setPost({ ...post, photo: `data:image/jpeg;base64,${data.photo}` });
+        setPost({ ...post, photo: data.photo });
+      } catch (error) {
+        console.log(error);
+        alert(error);
+      } finally {
+        setGenerating(false);
+      }
+    } else {
+      alert("The prompt is empty. Please enter a prompt.");
+    }
+  };
 
   return (
     <section className="flex flex-col gap-4 w-auto md:w-1/2 xl:w-1/3 md:mx-auto mx-4">
@@ -44,13 +75,15 @@ const CreatePost = () => {
           placeholder="e.g. An ancient cobblestone street lined with quaint, rustic houses."
           value={post.prompt}
           handleChange={handleChange}
+          isSurpriseMe
         />
 
         <div className="mt-2">
           <button
             type="button"
             onClick={generateImage}
-            className="bg-[#646cff]"
+            className="bg-[#646cff] text-white"
+            disabled={generating}
           >
             {generating ? "Generating" : "Generate"}
           </button>
@@ -78,7 +111,7 @@ const CreatePost = () => {
           </div>
         )}
         <div className="mx-auto">
-          <button type="submit" className="bg-[#646cff]">
+          <button type="submit" className="bg-[#646cff] text-white">
             Publish Your Post
           </button>
         </div>
