@@ -1,14 +1,44 @@
 import { useState, useEffect } from "react";
 import { FormField } from "../components";
+import Card from "../components/Card";
 
 const Home = () => {
   const [loading, setLoading] = useState(false);
-  const [posts, setPosts] = useState(null);
+  const [posts, setPosts] = useState([]);
   const [searchText, setSerachText] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [searchResults, setSearchResults] = useState(null);
 
   const handleSearchChange = (e) => {};
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+
+      try {
+        const response = await fetch("http://localhost:8080/api/post", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch posts. Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        setPosts(data.data);
+      } catch (err) {
+        console.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   return (
     <section className="flex flex-col gap-4 mx-4 w-auto md:w-1/2 xl:w-1/3">
@@ -31,6 +61,24 @@ const Home = () => {
           isSurpriseMe={true}
         />
       </div>
+
+      {loading ? (
+        <div>
+          <h1>Loading...</h1>
+        </div>
+      ) : (
+        <div>
+          {posts &&
+            posts.map((post, index) => (
+              <Card
+                key={index}
+                name={post.name}
+                prompt={post.prompt}
+                photo={post.photo}
+              />
+            ))}
+        </div>
+      )}
     </section>
   );
 };
