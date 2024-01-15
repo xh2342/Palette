@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FormField, Loader } from "../components";
 import { preview } from "../assets";
 const CreatePost = () => {
@@ -8,13 +9,40 @@ const CreatePost = () => {
     photo: "",
   });
   const [generating, setGenerating] = useState(false);
+  const [posting, setPosting] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setPost({ ...post, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (post.name && post.prompt && post.photo) {
+      console.log(post);
+      try {
+        setPosting(true);
+        const response = await fetch("http://localhost:8080/api/post", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(post),
+        });
+
+        const data = await response.json();
+        console.log(data);
+
+        navigate("/");
+      } catch (error) {
+        alert(error);
+      } finally {
+        setPosting(false);
+      }
+    } else {
+      alert("The post must have a name, a prompt and a photo");
+    }
   };
 
   const generateImage = async () => {
@@ -28,7 +56,7 @@ const CreatePost = () => {
           },
           body: JSON.stringify({ prompt: post.prompt }),
         });
-        console.log(response);
+
         if (!response.ok) {
           throw new Error(
             `Failed to generate image. Status: ${response.status}`
@@ -36,7 +64,6 @@ const CreatePost = () => {
         }
         const data = await response.json();
 
-        console.log(data);
         // setPost({ ...post, photo: `data:image/jpeg;base64,${data.photo}` });
         setPost({ ...post, photo: data.photo });
       } catch (error) {
@@ -111,7 +138,11 @@ const CreatePost = () => {
           </div>
         )}
         <div className="mx-auto">
-          <button type="submit" className="bg-[#646cff] text-white">
+          <button
+            type="submit"
+            className="bg-[#646cff] text-white"
+            disabled={posting}
+          >
             Publish Your Post
           </button>
         </div>
