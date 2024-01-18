@@ -5,11 +5,28 @@ import Card from "../components/Card";
 const Home = () => {
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState([]);
-  const [searchText, setSerachText] = useState("");
-  const [searchTimeout, setSearchTimeout] = useState(null);
+  const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState(null);
 
-  const handleSearchChange = (e) => {};
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    if (searchText) {
+      console.log(posts);
+      const findPosts = posts.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.prompt.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setSearchResults(findPosts);
+    } else {
+      alert("search field can not be empty");
+    }
+  };
+
+  const handSearchTextChange = (e) => {
+    setSearchText(e.target.value);
+  };
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -41,8 +58,8 @@ const Home = () => {
   }, []);
 
   return (
-    <section className="flex flex-col gap-4 mx-4 w-auto md:w-1/2 xl:w-1/3">
-      <div className="flex flex-col mt-4">
+    <section className="flex flex-col gap-4 mx-4 w-auto ">
+      <div className="flex flex-col mt-4 md:w-1/2 xl:w-1/3">
         <h1 className="text-3xl font-semibold">The Community Showcase</h1>
         <p className="text-sm mt-2">
           Browse through a collection of imaginative and visually stunning
@@ -50,16 +67,18 @@ const Home = () => {
         </p>
       </div>
 
-      <div>
-        <FormField
-          labelName="Search Post"
-          type="text"
-          name="search-posts"
-          placeholder="Search..."
-          value={searchText}
-          handleChange={handleSearchChange}
-          isSurpriseMe={true}
-        />
+      <div className="md:w-1/2 xl:w-1/3">
+        <form onSubmit={handleSearch} className="">
+          <FormField
+            labelName="Search Post"
+            type="text"
+            name="search-posts"
+            placeholder="Search..."
+            value={searchText}
+            handleChange={handSearchTextChange}
+          />
+          <button type="submit">Search</button>
+        </form>
       </div>
 
       {loading ? (
@@ -67,16 +86,25 @@ const Home = () => {
           <h1>Loading...</h1>
         </div>
       ) : (
-        <div>
-          {posts &&
-            posts.map((post, index) => (
-              <Card
-                key={index}
-                name={post.name}
-                prompt={post.prompt}
-                photo={post.photo}
-              />
-            ))}
+        <div className="grid lg:grid-cols-4 sm:grid-cols-3 xs:grid-cols-2 grid-cols-1 gap-3">
+          {searchResults
+            ? searchResults.map((post, index) => (
+                <Card
+                  key={index}
+                  name={post.name}
+                  prompt={post.prompt}
+                  photo={post.photo}
+                />
+              ))
+            : posts &&
+              posts.map((post, index) => (
+                <Card
+                  key={index}
+                  name={post.name}
+                  prompt={post.prompt}
+                  photo={post.photo}
+                />
+              ))}
         </div>
       )}
     </section>
